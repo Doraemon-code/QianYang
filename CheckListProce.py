@@ -14,24 +14,24 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 import tkinter as tk
 from tkinter import filedialog
 
-class CheckListProce:
-    def _int_(self):
+class CheckListProce():
+    def __init__(self):
         pass
     
-    #01 -get any file location that selected
+    # 01 - get any file location that selected
     @staticmethod
-    def getFileLoc(self,*files):
+    def getFileLoc(*files):
         root = tk.Tk()
         root.attributes('-topmost', 1)
         root.withdraw()
         file_paths = []
         for file in files:
             file_path = filedialog.askopenfilename(title=file)
-            file_paths.append(file_path)        
+            file_paths.append(file_path)
         return tuple(file_paths)
     
     @staticmethod
-    def GetWorksheetName(self,workbook_path, worksheet_name):
+    def GetWorksheetName(workbook_path, worksheet_name):
         workbook = openpyxl.load_workbook(workbook_path)    
         worksheet = None
         for sheet in workbook.worksheets:
@@ -39,6 +39,16 @@ class CheckListProce:
                 worksheet = sheet
                 break
         return worksheet
+    
+    def getFormList(self, crf,Lable_begin,lable_formName,trigger):
+        Form_List = []
+        for page in crf.pages:
+            if Lable_begin in page.extract_text(): # bigining after frid forms
+                formName = self.getFormName(trigger, page.extract_text(), lable_formName)
+                Form_List.append(formName)
+        Form_List = [x for x in set(Form_List) if x is not None]
+        Form_List = sorted(Form_List)
+        return Form_List
     
     def getFormName(self,trigger_input, page_text, lable):
         output = None
@@ -86,29 +96,31 @@ class CheckListProce:
         return output
     
     @staticmethod
-    def CheckListCreator(self, crfType, acrf_path, Form_List):
+    def CheckListCreator(self, crfType, acrf_path):
         #"Protocol #" can be the unique icon to make the table pages and form pages apart,and "Site ID Subject ID" can be the trigger to get form name line
         Lable_begin = "Protocol #"
         lable_formName = "dataset ="
         lable_subj = "Site ID Subject ID"
-        acrf=pdfplumber.open(acrf_path)
+        crf=pdfplumber.open(acrf_path)
         # initail a dic to collect everty form name and pages
         Page_Dic = {}
         # branch
         if "blank" in crfType:
             trigger = True
+            Form_List = self.getFormList(crf,Lable_begin,lable_subj,trigger)
             for form in Form_List:
-                    pageRange = self.getPageRange(trigger, acrf.pages, Lable_begin, form, lable_subj)
+                    pageRange =self. getPageRange(trigger, crf.pages, Lable_begin, form, lable_subj)
                     Page_Dic[form] = ", ".join(pageRange)  
         else:
             trigger = False
+            Form_List = self.getFormList(crf,Lable_begin,lable_formName,trigger)
             for form in Form_List:
-                    pageRange = self.getPageRange(trigger, acrf.pages, Lable_begin, form, lable_formName)
+                    pageRange =self. getPageRange(trigger, crf.pages, Lable_begin, form, lable_formName)
                     Page_Dic[form] = ", ".join(pageRange)  
         return Page_Dic
     
     @staticmethod
-    def OutFile(self, folder_path, outName, *args):
+    def OutFile( folder_path, outName, *args):
         out_path = folder_path + outName + '.xlsx'
         with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
             workbook = writer.book
