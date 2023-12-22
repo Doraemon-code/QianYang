@@ -3,6 +3,8 @@ from docx2pdf import convert
 from PyPDF2 import PdfReader, PdfWriter
 
 # 自定义目录路径
+# pdf_directory： CRF文件路径
+# docx_directory: 封面页路径，封面页可以是pdf或者word
 pdf_directory = "C:\\Users\\WeiqianYu\\Desktop\\006\\CRF\\1.1"
 docx_directory = "C:\\Users\\WeiqianYu\\Desktop\\006"
 
